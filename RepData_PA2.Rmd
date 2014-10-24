@@ -3,13 +3,37 @@ title: "RepDATA_PA2"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+#Synopsis
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
+
+
+#Data Processing
+
+
+
+```{r, cache=TRUE}
+options(stringsAsFactors = FALSE)
+#
+# you should change path according to your system
+setwd("c:/Users/gregory/Documents/!Projects/Trainings/Coursera - Reproducible Research/RepData_PA2/")
+# download.file(url = "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",destfile = "stormdata.csv.bz2")
+
+storm = read.csv("stormdata.csv.bz2",header=TRUE)
+
+```
 
 ```{r}
-summary(cars)
+str(storm)
+
+
+summary(storm)
+summary(storm)
+
+
 ```
+
+
 
 You can also embed plots, for example:
 
@@ -18,3 +42,5 @@ plot(cars)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Results

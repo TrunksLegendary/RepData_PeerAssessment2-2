@@ -1,3 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
+stormdata.csv.bz2
+RepData_PA2_cache
+stormdata.csv
