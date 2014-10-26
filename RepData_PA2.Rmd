@@ -1,10 +1,10 @@
 ---
-title: "Tornadoes are most harmful disaster for human health but floods"
+title: "Tornadoes are most harmful disaster for human health but floods has more serious economic consequences"
 output: html_document
 ---
 
-#Synopsis
-Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage. From U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database we can see that most harmful for economic weather event is **flood**. There is about 138 bln dollars damage from floods in 2001-2011 period. But most harmful weather event for public health is **tornado** with more than 5 thousands fatalities and more than 90 thousands injuries during 2001-2011 period.
+##Synopsis
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage. From U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database we can see that most harmful for economic weather event is **flood**. There is about 138 bln dollars damage from floods in 2001-2011 period. But most harmful weather event for public health is **tornado** with more than thousand fatalities and more than 14 thousands injuries during 2001-2011 period.
 
 
 
@@ -23,7 +23,7 @@ storm = read.csv("stormdata.csv.bz2",header=TRUE)
 
 ```
 
-We need to determine the events most harmful for health and for economic. For this question there is no need to keep original database. So we aggregate data by year and event type. We will keep only necessary variables: FATALITIES (number of fatalities), INJURIES (number of injuries), PROPDAMAGE (property damage, dollars) and CROPDMG (crop damage, dollars).
+We need to determine the events most harmful for health and for economic. For this questions there is no need to keep original database. So we aggregate data by year and event type. We will keep only necessary variables: FATALITIES (number of fatalities), INJURIES (number of injuries), PROPDAMAGE (property damage, dollars) and CROPDMG (crop damage, dollars).
 
 ```{r}
 invisible(library(dplyr))
@@ -41,6 +41,7 @@ aggr_storm = storm %>%
     mutate(EVTYPE = ifelse(EVTYPE %in% c("HURRICANE/TYPHOON"),"HURRICANE",EVTYPE)) %>%
     mutate(event = factor(EVTYPE)) %>% # convert event to factor
     mutate(year = as.numeric(substr(as.Date(BGN_DATE,format = "%m/%d/%Y %H:%M:%S"),1,4))) %>% # extract year
+    # multipliers for damage - thousands, millions, billions
     mutate(prop_mult = ifelse(PROPDMGEXP %in% c("B"),1e9, # billions
                               ifelse(PROPDMGEXP %in% c("m","M"),1e6,  # millions
                                      ifelse(PROPDMGEXP %in% c("k","K"),1e3,0)))) %>% # multiplier for damage
@@ -60,13 +61,16 @@ aggr_storm = storm %>%
 
 ##Types of events which have the greatest economic consequences
  
-Under economic consequences we will understand total damage (property damage + crop damage) from the weather event. Available data covers rather long period of time. To correctly estimate economic damage we need adjustments by inflation. It's pity but I don't have such data so here I developed workaround. We pick events with max economic damage (total_dmg) in each year.
+Under economic consequences we will understand total damage (property damage + crop damage) from the weather event. Available data covers rather long period of time. To correctly estimate economic damage we need adjustments by inflation but there is no such data in this base. To avoid this problem we will pick events with max economic damage (total_dmg) in each year (there is very small inflation during one year).
 
 ```{r, results='asis'}
+
+# ranking events by damage
 aggr_storm = aggr_storm %>%
     group_by(year) %>%
     mutate(rank = min_rank(desc(total_dmg)))
 
+# keep one event with maximum damage from each year 
 max_dmg_events = filter(aggr_storm,rank==1) %>% 
     select(event) %>% 
     group_by(event) %>%
@@ -121,26 +125,17 @@ lst_years_damage = aggr_storm %>%
 
 # Top 10 events by damage in 2000-2001
 kable (lst_years_damage[1:10,])
-lst_years_damage[,"event"] = with(lst_years_damage,factor(event, levels=event))
-qplot(event,
-      damage/1e9,
-      data=lst_years_damage[1:5,],
-      geom="histogram", 
-      stat = "identity",
-      xlab ="Event", 
-      ylab = "Damage, bln. $",
-      main = "Fig. 2. Damage from top five most harmful weather events during 2001-2011") +
-    theme_bw()
+
 
 ```
 
-Finally, FLOOD is clear winner with approximately 138 billion dollars of damage.
+Finally, FLOOD is clear winner with approximately 138 billion dollars of damage in 2001-2011.
 
 ##Types of events wich are most harmful with respect to population health
 
-For consistency with previews topic in this question we will consider period from 2001 year. So we will count number of injuries and fatalities from different type of events during this period.
+For consistency with previews topic in this question we will consider period from 2001 year. We will count number of injuries and fatalities from different type of events during this period.
 
-```{r}
+```{r, results='asis'}
 health_damage = aggr_storm %>% 
     filter(year>=2001) %>%
     group_by (event) %>%
@@ -151,6 +146,25 @@ kable(health_damage[1:10,])
 max_fatal = health_damage[1,"fatalities"]
 max_injur = health_damage[1,"injuries"]
 
+
+```
+
+Both maximum fatalities(`r max_fatal`) and maximum injuries(`r max_injur`) are from tornado.
+
+#Results
+
+Most harmful for economic weather event is **flood**. There is about 138 bln. dollars damage from floods in 2001-2011 period. But most harmful weather event for public health is **tornado** with more than 1'000 fatalities and more than 14'000 injuries during 2001-2011 period. Our conclusions mostly based on 2001-2011 years data because of some inconsistencies in data in early periods.
+```{r}
+lst_years_damage[,"event"] = with(lst_years_damage,factor(event, levels=event))
+qplot(event,
+      damage/1e9,
+      data=lst_years_damage[1:5,],
+      geom="histogram", 
+      stat = "identity",
+      xlab ="Event", 
+      ylab = "Damage, bln. $",
+      main = "Fig. 2. Damage from top five most harmful events during 2001-2011") +
+    theme_bw()
 health_damage[,"event"] = with(health_damage,factor(event, levels=event))
 qplot(event,fatalities, 
       data = health_damage[1:5,], 
@@ -160,10 +174,9 @@ qplot(event,fatalities,
       xlab = "Event",
       main = "Fig. 3. Fatalities from top 5 weather events in 2001-2011") +
     theme_bw()
+
 ```
-Both maximum fatalities(`r max_fatal`) and maximum injuries(`r max_injur`) are from tornado.
 
-#Results
 
-Most harmful for economic weather event is **flood**. There is about 138 bln. dollars damage from floods in 2001-2011 period. But most harmful weather event for public health is **tornado** with more than 5'000 fatalities and more than 90'000 injuries during 2001-2011 period. Our conclusions mostly based on 2001-2011 years data because of some inconsistencies in data in early period.
+#Thank you for your attention!
 
