@@ -98,10 +98,12 @@ aggr_storm = storm %&gt;%
     # multipliers for damage - thousands, millions, billions
     mutate(prop_mult = ifelse(PROPDMGEXP %in% c(&quot;B&quot;),1e9, # billions
                               ifelse(PROPDMGEXP %in% c(&quot;m&quot;,&quot;M&quot;),1e6,  # millions
-                                     ifelse(PROPDMGEXP %in% c(&quot;k&quot;,&quot;K&quot;),1e3,0)))) %&gt;% # multiplier for damage
+                                     ifelse(PROPDMGEXP %in% c(&quot;k&quot;,&quot;K&quot;),1e3, # multiplier for damage
+                                            ifelse(PROPDMGEXP %in% c(&quot;h&quot;,&quot;H&quot;),1e2,1))))) %&gt;% # multiplier for damage
     mutate(crop_mult = ifelse(CROPDMGEXP %in% c(&quot;B&quot;),1e9, # billions
                               ifelse(CROPDMGEXP %in% c(&quot;m&quot;,&quot;M&quot;),1e6, # millions
-                                     ifelse(CROPDMGEXP %in% c(&quot;k&quot;,&quot;K&quot;),1e3,0)))) %&gt;% # multiplier for damage
+                                     ifelse(CROPDMGEXP %in% c(&quot;k&quot;,&quot;K&quot;),1e3, # multiplier for damage
+                                            ifelse(CROPDMGEXP %in% c(&quot;h&quot;,&quot;H&quot;),1e2,1))))) %&gt;% # multiplier for damage
     group_by(year,event) %&gt;%
     summarize(fatalities = sum(FATALITIES,na.rm = TRUE),
               injuries = sum(INJURIES,na.rm = TRUE),
